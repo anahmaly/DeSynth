@@ -1,0 +1,14 @@
+.git
+.agents
+.codex
+.venv*
+__pycache__
+.pytest_cache
+models
+data
+web-output
+out
+*.gguf
+*.safetensors
+original.png
+tests

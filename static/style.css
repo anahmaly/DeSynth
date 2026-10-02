@@ -1,0 +1,35 @@
+:root { color-scheme: light; font-family: system-ui, sans-serif; color: #23352f; background: #f4f5f0; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+main { max-width: 1120px; margin: 0 auto; padding: 40px 24px; }
+header { margin-bottom: 28px; }
+.eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .16em; color: #527062; }
+h1 { font-size: 40px; letter-spacing: -.04em; margin: 6px 0; }
+p { line-height: 1.5; }
+header p { margin: 8px 0; }
+form { background: #fff; border: 1px solid #ccd6ce; border-radius: 12px; padding: 24px; }
+fieldset { margin: 0; padding: 0; border: 0; min-width: 0; }
+.upload { display: flex; flex-direction: column; gap: 10px; }
+.upload span, .hint, summary span { color: #52645b; font-size: 14px; }
+input, select { font: inherit; padding: 9px; border: 1px solid #a5b6ab; border-radius: 5px; background: #fff; color: inherit; min-width: 0; width: 100%; }
+input[type=file] { border: 0; padding: 4px 0; }
+details { border-top: 1px solid #dce3dd; margin: 20px 0; padding-top: 18px; }
+summary { cursor: pointer; font-weight: 600; }
+summary span { font-weight: 400; margin-left: 8px; }
+.settings { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 18px; }
+.settings label { display: grid; gap: 6px; font-size: 14px; }
+button, .button { display: inline-block; background: #245e45; color: #fff; padding: 12px 20px; border: 0; border-radius: 6px; font: inherit; font-weight: 600; text-decoration: none; cursor: pointer; }
+button:disabled { opacity: .65; cursor: wait; }
+:focus-visible { outline: 3px solid #bd691c; outline-offset: 3px; }
+#status { margin: 14px 0 0; }
+#status[data-state=error] { color: #a12e22; }
+.comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 26px 0 20px; }
+figure { margin: 0; min-width: 0; }
+figcaption { font-size: 14px; font-weight: 600; margin-bottom: 10px; }
+.canvas { background: #e9ede6; border: 1px solid #cbd5cd; border-radius: 8px; min-height: 240px; display: flex; align-items: center; justify-content: center; overflow: hidden; color: #52645b; }
+img { display: block; max-width: 100%; max-height: 620px; object-fit: contain; }
+aside { padding: 18px; background: #fff6df; border: 1px solid #dcc187; border-radius: 8px; margin-bottom: 22px; overflow-wrap: anywhere; }
+aside p { margin-bottom: 0; }
+footer { color: #52645b; font-size: 13px; line-height: 1.6; margin-top: 28px; max-width: 760px; }
+[hidden] { display: none !important; }
+@media (max-width: 640px) { main { padding: 24px 16px; } .settings, .comparison { grid-template-columns: 1fr; } summary span { display: block; margin: 8px 0 0; } form { padding: 18px; } }

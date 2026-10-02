@@ -5,11 +5,11 @@ torchvision==0.22.1+cu128
 diffusers>=0.36
 transformers>=4.46
 accelerate>=1.0
+peft>=0.17
 gguf>=0.10
 sentencepiece
 protobuf
 pillow
 safetensors
-llama-cpp-python>=0.3
 numpy
-opencv-python
+opencv-python-headless

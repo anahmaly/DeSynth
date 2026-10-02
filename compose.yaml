@@ -1,0 +1,20 @@
+services:
+  desynth:
+    build: .
+    ports:
+      - "${DESYNTH_BIND_ADDRESS:-127.0.0.1}:${DESYNTH_PORT:-7860}:7860"
+    volumes:
+      - ./models:/models:ro
+      - ./data/cache:/data/cache
+      - ./data/output:/data/output
+    environment:
+      HF_HOME: /data/cache
+      DESYNTH_MODEL_DIR: /models
+      DESYNTH_OUTPUT_DIR: /data/output
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]

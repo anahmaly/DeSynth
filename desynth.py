@@ -21,19 +21,13 @@ os.environ.setdefault("HF_HUB_DISABLE_TELEMETRY", "1")
 os.environ.setdefault("HF_HUB_DISABLE_IMPLICIT_TOKEN", "1")
 logging.getLogger("huggingface_hub").setLevel(logging.ERROR)
 logging.getLogger("diffusers").setLevel(logging.ERROR)
-try:
-    from diffusers.utils import logging as _df_logging
-    _df_logging.set_verbosity_error()
-except Exception:
-    pass
-
-import torch
 
 
 # diffusers' load_gguf_checkpoint .copy()s every tensor onto the heap (~10GB
 # of independent allocations). Windows' allocator eventually fails. Read
 # straight from the mmap instead.
 def _patch_gguf_loader() -> None:
+    import torch
     from diffusers.models import model_loading_utils as mlu
     import gguf as _gguf
     from gguf import GGUFReader
@@ -57,6 +51,7 @@ def _patch_gguf_loader() -> None:
 # Sequential CPU offload moves params through meta device, dropping quant_type
 # and crashing GGUFParameter.__new__. Recover it from the source if possible.
 def _patch_gguf_param() -> None:
+    import torch
     from diffusers.quantizers.gguf.utils import GGUFParameter
     _orig = GGUFParameter.__new__
 
@@ -73,17 +68,6 @@ def _patch_gguf_param() -> None:
 
     GGUFParameter.__new__ = _new
 
-
-_patch_gguf_loader()
-_patch_gguf_param()
-
-from diffusers import (
-    AutoencoderKLQwenImage,
-    GGUFQuantizationConfig,
-    QwenImageImg2ImgPipeline,
-    QwenImageTransformer2DModel,
-)
-from diffusers.utils import load_image
 
 ROOT = Path(__file__).parent
 DEFAULT_INPUT = ROOT / "Original.png"
@@ -107,8 +91,24 @@ DEFAULT_DENOISE = 0.25
 DEFAULT_RESTORE_SIGMA = 1.95
 
 
-def build_pipeline(transformer_path: Path = GGUF_TRANSFORMER) -> QwenImageImg2ImgPipeline:
-    for p in (transformer_path, LIGHTNING_LORA, EMBEDS_CACHE):
+def build_pipeline(
+    transformer_path: Path = GGUF_TRANSFORMER,
+    lora_path: Path = LIGHTNING_LORA,
+    embeds_path: Path = EMBEDS_CACHE,
+):
+    import torch
+    from diffusers import (
+        AutoencoderKLQwenImage,
+        GGUFQuantizationConfig,
+        QwenImageImg2ImgPipeline,
+        QwenImageTransformer2DModel,
+    )
+    from diffusers.utils import logging as df_logging
+
+    df_logging.set_verbosity_error()
+    _patch_gguf_loader()
+    _patch_gguf_param()
+    for p in (transformer_path, lora_path, embeds_path):
         if not p.exists():
             raise FileNotFoundError(
                 f"{p}\n(Run `python precompute_embeds.py` first if embeds_cache.pt is missing.)"
@@ -152,7 +152,7 @@ def build_pipeline(transformer_path: Path = GGUF_TRANSFORMER) -> QwenImageImg2Im
     )
 
     # fuse_lora doesn't work with GGUF-packed base weights, use runtime adapter.
-    pipe.load_lora_weights(str(LIGHTNING_LORA), adapter_name="lightning")
+    pipe.load_lora_weights(str(lora_path), adapter_name="lightning")
     pipe.set_adapters(["lightning"], adapter_weights=[0.8])
 
     # Sequential offload is the only mode that fits a 10GB Q4 transformer in 8GB.
@@ -216,6 +216,8 @@ def _restore(clean_pil, original_pil, *, sigma: float, mode: str = "gaussian", u
 
 
 def _sample(pipe, image, embeds, *, denoise: float, steps: int, seed: int):
+    import torch
+
     generator = torch.Generator(device="cpu").manual_seed(seed)
     return pipe(
         image=image,
@@ -253,6 +255,9 @@ def main() -> None:
     parser.add_argument("--transformer", type=Path, default=GGUF_TRANSFORMER, help="alt GGUF transformer path")
     parser.set_defaults(restore=True)
     args = parser.parse_args()
+
+    import torch
+    from diffusers.utils import load_image
 
     if args.seed is None:
         import secrets
