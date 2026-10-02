@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DeSynth — Image workspace</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+</head>
+<body>
+  <main>
+    <header><span class="eyebrow">IMAGE WORKSPACE</span><h1>DeSynth</h1>
+      <p>Lightly regenerate an image, then restore detail from the original.</p>
+    </header>
+    {% if problems %}
+    <aside><strong>Setup needed before processing</strong><ul>{% for problem in problems %}<li>{{ problem }}</li>{% endfor %}</ul>
+      <p>See the README for model setup. You can still explore this page.</p></aside>
+    {% endif %}
+    <form id="process-form" action="{{ url_for('process') }}" method="post" enctype="multipart/form-data">
+      <fieldset id="controls">
+        <label class="upload" for="image"><strong>1. Choose an image</strong><span>One image at a time · up to 32 MB</span>
+          <input id="image" name="image" type="file" accept="image/*" required>
+        </label>
+        <details><summary>Advanced settings <span>Optional — defaults are ready to use</span></summary>
+          <div class="settings">
+            <label>Seed<input name="seed" type="number" min="0" max="9223372036854775807" step="1" placeholder="Random each time"></label>
+            <label>Denoise<input name="denoise" type="number" min="0.01" max="1" step="0.01" value="{{ defaults.denoise }}"></label>
+            <label>Steps<input name="steps" type="number" min="1" max="100" value="{{ defaults.steps }}"></label>
+            <label>Restore mode<select name="restore_mode"><option value="gaussian">Gaussian (default)</option><option value="edge">Edge-aware</option></select></label>
+            <label>Restore sigma<input name="restore_sigma" type="number" min="0.01" max="10" step="0.01" value="{{ defaults.restore_sigma }}"></label>
+            <label>Sharpening<input name="unsharp" type="number" min="0" max="2" step="0.1" value="{{ defaults.unsharp }}"></label>
+          </div>
+          <p class="hint">Higher denoise changes more of the image. Steps × denoise must be at least 1. Sharpening 0 means off. A fixed seed helps repeat a run.</p>
+        </details>
+        <button id="process" type="submit">2. Process image</button>
+      </fieldset>
+      <p id="status" role="status" aria-live="polite">Choose an image to begin.</p>
+    </form>
+    <section class="comparison" aria-label="Image comparison">
+      <figure><figcaption>Original</figcaption><div class="canvas"><img id="original" alt="Original uploaded image" hidden><span id="original-empty">Your image appears here</span></div></figure>
+      <figure><figcaption>Processed</figcaption><div class="canvas"><img id="output" alt="Processed image" hidden><span id="output-empty">Your result appears here</span></div></figure>
+    </section>
+    <a id="download" class="button" hidden download="desynth.png">Download PNG</a>
+    <footer>Processing can change image details. A completed result or a close visual match does not verify watermark removal. This UI does not include a watermark detector.</footer>
+    <noscript>Enable JavaScript to process images and display the comparison.</noscript>
+  </main>
+</body>
+</html>
